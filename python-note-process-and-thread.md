@@ -248,90 +248,73 @@ if __name__ == '__main__':
 
 
 ##多线程
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+一个进程内可以有多个线程（至少一个主线程)，多个线程共享该进程的所有变量，同时对全局变量进行访问和改写很容易出现混乱，所以需要用锁进行线程的同步控制。python由于设计时有GIL全局锁，所以多线程无法利用多核CPU,也不存在多线程并发的问题。
+
+Python标准库中提供了_thread和threading两个模块来实现多线程，threading是_thread的高级封装，因此一般只需要import threading即可。
+`
+import time, threading
+ 
+def loop():
+    print('thread %s is running...' % threading.current_thread().name)
+    n = 0
+    while n < 5:
+        n = n+1
+        print('thread %s >>> %s' % (threading.current_thread().name, n))
+        time.sleep(1)
+    print('thread %s is end.' % threading.current_thread().name)
+
+print('thread %s is running...' % threading.current_thread().name)
+t = threading.Thread(target=loop, name='LoopThread')
+t.start()
+t.join()
+print('thread %s is end.' % threading.current_thread().name)
+`#output
+thread MainThread is running...
+thread LoopThread is running...
+thread LoopThread >>> 1
+thread LoopThread >>> 2
+thread LoopThread >>> 3
+thread LoopThread >>> 4
+thread LoopThread >>> 5
+thread LoopThread is end.
+thread MainThread is end.
+
+其实，多线程和多进程的实现很类似，进程启动时默认的线程为主线程，主线程之外可以开启新的子线程，current_thread()函数返回当前线程的实例。
+
+##多线程同步
+多线程和多进程在数据共享方面有很大不同，多线程共享同一个进程的所有全局变量，多进程之间的数据是互不干扰的，因此，多线程的同步往往比进程同步要常见。和多进程同步一样，多线程之间的同步也有三种：
+1.Lock
+`# 多线程同步,有锁
+
+import threading
+
+balance = 0
+lock = threading.Lock()
+
+def change_it(n):
+    global balance
+    balance = balance + n
+    balance = balance - n
+    
+def run_thread(n):
+    for i in range(10000):
+        lock.acquire()  #先获取锁
+        try:        
+            change_it(n)
+        finally:
+            lock.release()  #再释放锁
+
+t1 = threading.Thread(target=run_thread,args=(5,))
+t2 = threading.Thread(target=run_thread,args=(8,))
+t1.start()
+t2.start()
+t1.join()
+t2.join()
+
+print balance
+`
+
+线程锁需要先获取，执行完操作后再释放锁。
 
 
 
