@@ -286,32 +286,32 @@ Python标准库中提供了_thread和threading两个模块来实现多线程，t
 ## 多线程同步
 多线程和多进程在数据共享方面有很大不同，多线程共享同一个进程的所有全局变量，多进程之间的数据是互不干扰的，因此，多线程的同步往往比进程同步要常见。和多进程同步一样，多线程之间的同步也有三种：
 1. Lock
-    import threading
+        import threading
 
-    balance = 0
-    lock = threading.Lock()
+        balance = 0
+        lock = threading.Lock()
 
-    def change_it(n):
-        global balance
-        balance = balance + n
-        balance = balance - n
+        def change_it(n):
+            global balance
+            balance = balance + n
+            balance = balance - n
 
-    def run_thread(n):
-        for i in range(10000):
-            lock.acquire()  #先获取锁
-            try:        
-                change_it(n)
-            finally:
-                lock.release()  #再释放锁
+        def run_thread(n):
+            for i in range(10000):
+                lock.acquire()  #先获取锁
+                try:        
+                    change_it(n)
+                finally:
+                    lock.release()  #再释放锁
 
-    t1 = threading.Thread(target=run_thread,args=(5,))
-    t2 = threading.Thread(target=run_thread,args=(8,))
-    t1.start()
-    t2.start()
-    t1.join()
-    t2.join()
+        t1 = threading.Thread(target=run_thread,args=(5,))
+        t2 = threading.Thread(target=run_thread,args=(8,))
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
 
-    print balance
+        print balance
 线程锁需要先获取，执行完操作后再释放锁。
 
 
